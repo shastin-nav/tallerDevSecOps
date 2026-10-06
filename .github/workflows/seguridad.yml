@@ -1,22 +1,113 @@
 name: seguridad-planta
 on: [push, workflow_dispatch]
+
 permissions:
   contents: read
+
+# Todas las acciones están fijadas a su commit exacto (no a una etiqueta reescribible: caso tj-actions).
+# Las herramientas se descargan en una versión exacta y se verifica su suma SHA-256 antes de usarlas
+# (caso Trivy v0.69.4, comprometida el 19-03-2026: nunca usar esa versión).
+env:
+  TRIVY_VERSION: "0.75.0"
+  TRIVY_SHA256: "c6e65abddb348e25f10549df887045629cf28cc72453cd1c63acb717316b3f3f"
+  OSV_VERSION: "2.2.4"
+  OSV_SHA256: "7702cd1e5d9f5059dd9570f4ad967f27d3c5f5391b371ec937b384c238177f55"
+  SEMGREP_VERSION: "1.179.0"
+
 jobs:
+  # ─────────────────────────────────────────────────────────────
+  # Control 1 · Código propio: secretos (gitleaks) y patrones peligrosos (semgrep)
+  # ─────────────────────────────────────────────────────────────
   buscar-secretos:
+    name: "Control 1 · Código propio (buscar-secretos: gitleaks + semgrep)"
     runs-on: ubuntu-latest
     steps:
-      # Acciones fijadas a su identificador exacto (commit), no a una etiqueta reescribible (caso tj-actions).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
+          fetch-depth: 0 # todo el historial: los secretos suelen esconderse en commits antiguos
+
       - name: Buscar secretos con Gitleaks
         uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Buscar patrones peligrosos con Semgrep
+        run: |
+          pip install "semgrep==${SEMGREP_VERSION}"
+          # p/python: reglas públicas · .semgrep/: reglas propias de la planta
+          # (credencial de fábrica, clave escrita, shell=True, verify=False, IA con escritura en el PLC)
+          semgrep scan --config p/python --config .semgrep/ --error --metrics=off
+
+  # ─────────────────────────────────────────────────────────────
+  # Control 2 · Código prestado: dependencias, vulnerabilidades conocidas y SBOM
+  # ─────────────────────────────────────────────────────────────
+  control-2-dependencias:
+    name: "Control 2 · Código prestado (trivy + osv-scanner + SBOM)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: ¿Están todas las dependencias fijadas a una versión exacta?
+        run: |
+          sueltas=$(grep -vE '^\s*(#|$)' requirements.txt | grep -v '==' || true)
+          if [ -n "$sueltas" ]; then
+            echo "::error::Dependencias sin versión exacta:"; echo "$sueltas"; exit 1
+          fi
+          echo "Todas las dependencias usan '=='."
+
+      - name: Instalar Trivy y OSV-Scanner (versión exacta + verificación SHA-256)
+        run: |
+          curl -sSfL -o trivy.tgz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tgz" | sha256sum -c -
+          tar xzf trivy.tgz trivy && sudo mv trivy /usr/local/bin/
+          curl -sSfL -o osv-scanner "https://github.com/google/osv-scanner/releases/download/v${OSV_VERSION}/osv-scanner_linux_amd64"
+          echo "${OSV_SHA256}  osv-scanner" | sha256sum -c -
+          chmod +x osv-scanner && sudo mv osv-scanner /usr/local/bin/
+          trivy --version && osv-scanner --version
+
+      - name: Generar la lista de materiales del software (SBOM CycloneDX)
+        run: trivy fs --format cyclonedx --output sbom.cdx.json .
+
+      - name: Trivy · ¿alguna pieza tiene una vulnerabilidad conocida HIGH o CRITICAL?
+        run: trivy fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 .
+
+      - name: OSV-Scanner · segunda opinión (incluye dependencias transitivas)
+        run: osv-scanner scan source -r .
+
+      - name: Publicar el SBOM como artefacto de la ejecución
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom-maipo-sur
+          path: sbom.cdx.json
+
+  # ─────────────────────────────────────────────────────────────
+  # Control 3 · Configuración: infraestructura declarada como código en infra/
+  # ─────────────────────────────────────────────────────────────
+  control-3-configuracion:
+    name: "Control 3 · Configuración (trivy config infra/)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Instalar Trivy (versión exacta + verificación SHA-256)
+        run: |
+          curl -sSfL -o trivy.tgz "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tgz" | sha256sum -c -
+          tar xzf trivy.tgz trivy && sudo mv trivy /usr/local/bin/
+
+      - name: Trivy config · ¿equipo abierto a internet, puertos industriales expuestos?
+        run: trivy config --exit-code 1 infra/
+
+  # ─────────────────────────────────────────────────────────────
+  # El servicio sigue funcionando: lee la clave desde el secreto PLC_PASSWORD
+  # ─────────────────────────────────────────────────────────────
   servicio-funciona:
-    # El servicio sigue funcionando: ahora lee la clave desde el secreto PLC_PASSWORD.
+    name: "Prueba funcional · el servicio lee PLC_PASSWORD"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -33,15 +124,7 @@ jobs:
           import lector_cloro as l
           cfg = l.cargar_config()
           assert l.obtener_clave(cfg), "PLC_PASSWORD vacío"
-          cliente = l.app.test_client()
-          r = cliente.get("/api/cloro")
+          r = l.app.test_client().get("/api/cloro")
           assert r.status_code == 200, r.status_code
           print("OK:", r.get_json())
           PY
-
-  # ---------------------------------------------------------------
-  # Ejercicio 2 · Fase B: quitar el comentario de los tres controles
-  # ---------------------------------------------------------------
-  # control-1-codigo-propio:      semgrep + gitleaks
-  # control-2-codigo-prestado:    trivy fs + osv-scanner + SBOM
-  # control-3-configuracion:      trivy config sobre infra/

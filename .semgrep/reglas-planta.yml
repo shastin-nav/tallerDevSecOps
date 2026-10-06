@@ -1,0 +1,84 @@
+# Reglas propias de la planta Maipo Sur (Control 1 · código propio).
+# Se ejecutan junto al conjunto público p/python de Semgrep.
+rules:
+  - id: credencial-de-fabrica
+    languages: [yaml]
+    severity: ERROR
+    message: >-
+      Credencial de fábrica en la configuración ($KEY: $VAL). Es pública en el manual
+      del fabricante: si funciona en esta planta, funciona en todas las que no la cambiaron
+      (patrón del ataque a PLC Unitronics, CISA 28-11-2023). Cámbiala y guárdala como secreto.
+    metadata:
+      cwe: "CWE-1392: Use of Default Credentials"
+      stride: Suplantación
+    patterns:
+      - pattern: "$KEY: $VAL"
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: (?i)^(clave|contrasena|contraseña|password|passwd|pin|pass)$
+      - metavariable-regex:
+          metavariable: $VAL
+          regex: ^["']?(1111|0000|1234|12345|123456|admin|password|default|root|user|guest|plc)["']?$
+
+  - id: clave-escrita-en-configuracion
+    languages: [yaml]
+    severity: ERROR
+    message: >-
+      Hay un valor escrito en el campo '$KEY'. Las claves se leen desde un secreto
+      (variable de entorno), nunca se guardan en el repositorio.
+    metadata:
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      stride: Filtración
+    patterns:
+      - pattern: "$KEY: $VAL"
+      - metavariable-regex:
+          metavariable: $KEY
+          regex: (?i)^(clave|contrasena|contraseña|password|passwd|token|secreto|secret)$
+      - metavariable-regex:
+          metavariable: $VAL
+          regex: ^["']?[^\s"'$]{4,}["']?$
+
+  - id: comando-con-shell-true
+    languages: [python]
+    severity: ERROR
+    message: >-
+      subprocess con shell=True: si el comando se arma con datos de afuera (host, registro)
+      alguien puede inyectar órdenes al sistema operativo de la pasarela (CWE-78).
+    metadata:
+      cwe: "CWE-78: OS Command Injection"
+      stride: Elevación de privilegios
+    pattern-either:
+      - pattern: subprocess.run(..., shell=True, ...)
+      - pattern: subprocess.Popen(..., shell=True, ...)
+      - pattern: subprocess.call(..., shell=True, ...)
+      - pattern: subprocess.check_output(..., shell=True, ...)
+
+  - id: tls-sin-verificar
+    languages: [python]
+    severity: ERROR
+    message: >-
+      verify=False desactiva la verificación del certificado: cualquiera en el camino puede
+      leer o alterar los datos de la planta (CWE-295).
+    metadata:
+      cwe: "CWE-295: Improper Certificate Validation"
+      stride: Manipulación
+    pattern-either:
+      - pattern: requests.$M(..., verify=False, ...)
+
+  - id: asistente-ia-con-escritura-en-plc
+    languages: [yaml]
+    severity: ERROR
+    message: >-
+      El asistente de IA tiene una herramienta que actúa sobre el proceso ($TOOL). Un texto
+      inyectado podría convertirse en una orden al PLC (OWASP LLM01 + autonomía excesiva).
+      El asistente solo debe leer, y toda acción debe pasar por un humano.
+    metadata:
+      owasp-llm: "LLM01, LLM03"
+      stride: Elevación de privilegios
+    patterns:
+      - pattern-inside: |
+          herramientas: [...]
+      - pattern: $TOOL
+      - metavariable-regex:
+          metavariable: $TOOL
+          regex: (?i)^(escribir|cambiar|reiniciar|detener|abrir|cerrar|modificar)_.*

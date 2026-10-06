@@ -1,0 +1,17 @@
+# Configuración de Gitleaks de la planta: reglas por defecto + campos con nombre en español.
+# Las reglas por defecto buscan "password", "token", "secret"... pero no "clave".
+[extend]
+useDefault = true
+
+[[rules]]
+id = "clave-en-espanol"
+description = "Clave o contraseña escrita en un campo con nombre en español"
+regex = '''(?i)(?:clave|contrase(?:ñ|n)a)[\w.-]{0,20}["']?\s*[:=]\s*["']?([^\s"'$]{8,})["']?'''
+secretGroup = 1
+entropy = 3.0
+keywords = ["clave", "contrase"]
+
+# No son secretos: nombres de variables de entorno (PLC_PASSWORD) ni código que las lee.
+[[rules.allowlists]]
+regexTarget = "secret"
+regexes = ['''^[A-Z][A-Z0-9_]+$''', '''^os\.environ''']
