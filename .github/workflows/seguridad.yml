@@ -76,7 +76,30 @@ jobs:
         run: trivy fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 .
 
       - name: OSV-Scanner · segunda opinión (incluye dependencias transitivas)
-        run: osv-scanner scan source -r .
+        run: |
+          set +e
+          osv-scanner scan source -r . --format json --output osv.json
+          codigo=$?
+          set -e
+          # Cada hallazgo queda como anotación visible en la ejecución y en el resumen.
+          python3 - <<'PY'
+          import json, os
+          d = json.load(open("osv.json"))
+          filas = []
+          for res in d.get("results", []):
+              for p in res.get("packages", []):
+                  pk = p["package"]
+                  for v in p.get("vulnerabilities", []):
+                      sev = (v.get("database_specific") or {}).get("severity", "s/i")
+                      fixed = [e["fixed"] for a in v.get("affected", []) for r in a.get("ranges", []) for e in r.get("events", []) if "fixed" in e]
+                      alias = ",".join(a for a in v.get("aliases", []) if a.startswith("CVE")) or "-"
+                      print(f"::error title=OSV {pk['name']} {pk['version']}::{v['id']} ({alias}) severidad {sev} · corregida en {','.join(fixed) or 's/i'} · {v.get('summary','')[:120]}")
+                      filas.append(f"| {pk['name']} | {pk['version']} | {v['id']} | {alias} | {sev} | {','.join(fixed) or 's/i'} |")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as s:
+              s.write("## OSV-Scanner\n\n")
+              s.write("| Paquete | Versión | ID | CVE | Severidad | Corregida en |\n|---|---|---|---|---|---|\n" + "\n".join(filas) + "\n" if filas else "Sin vulnerabilidades conocidas.\n")
+          PY
+          exit $codigo
 
       - name: Publicar el SBOM como artefacto de la ejecución
         if: always()
