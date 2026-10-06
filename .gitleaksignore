@@ -1,6 +1,6 @@
 # Hallazgo histórico ACEPTADO con justificación (ver ENTREGABLE.md, sección 5).
 # Clave del PLC escrita en config.yaml en el commit inicial dc95c45 (turno de emergencia).
-# - Se sacó del código: ahora se lee desde el secreto PLC_CLAVE del repositorio.
+# - Se sacó del código: ahora se lee desde el secreto PLC_PASSWORD del repositorio.
 # - Se considera comprometida y se rotó en el PLC: el valor del historial ya no sirve.
 # - No se reescribe el historial: el repositorio es público y ya pudo ser clonado,
 #   así que borrar el commit no "des-filtra" nada; lo que cierra el riesgo es la rotación.

@@ -5,7 +5,7 @@ plc:
   usuario: turno-noche
   # La clave NO va aquí: se lee desde la variable de entorno (secreto del repositorio).
   # La clave anterior quedó expuesta en el historial y fue rotada en el PLC.
-  variable_clave: PLC_CLAVE
+  password_env: PLC_PASSWORD
   registro_cloro: 40001
   escala: 0.01
 

@@ -16,7 +16,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   servicio-funciona:
-    # El servicio sigue funcionando: ahora lee la clave desde el secreto PLC_CLAVE.
+    # El servicio sigue funcionando: ahora lee la clave desde el secreto PLC_PASSWORD.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -26,13 +26,13 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Prueba de humo
         env:
-          PLC_CLAVE: ${{ secrets.PLC_CLAVE }}
+          PLC_PASSWORD: ${{ secrets.PLC_PASSWORD }}
           MODO_SIMULACION: "1"
         run: |
           python - <<'PY'
           import lector_cloro as l
           cfg = l.cargar_config()
-          assert l.obtener_clave(cfg), "PLC_CLAVE vacío"
+          assert l.obtener_clave(cfg), "PLC_PASSWORD vacío"
           cliente = l.app.test_client()
           r = cliente.get("/api/cloro")
           assert r.status_code == 200, r.status_code
