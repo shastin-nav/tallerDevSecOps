@@ -5,16 +5,16 @@
 
 ## Sistema y equipo
 - Sector: **Agua potable** · dosificación de cloro en la planta Maipo Sur (abastece a 80.000 personas). Defecto sembrado: credencial de fábrica en la configuración del controlador.
-- Nombre: Equipo 1 · _(nombre del equipo)_
+- Nombre: Equipo 1 · _(LosPapus)_
 - Roles:
-  - Operador de planta (sin teclado, poder de veto): _(nombre)_
-  - Desarrollador (con teclado): _(nombre)_
-  - Guardián del pipeline (con teclado): _(nombre)_
-  - Auditor de IA (sin teclado, lidera la fase C): _(nombre)_
-  - Relator (sin teclado, expone los 90 s): _(nombre)_
+  - Operador de planta (sin teclado, poder de veto): _(Justin Navarro)_
+  - Desarrollador (con teclado): _(Abdiel Ortiz)_
+  - Guardián del pipeline (con teclado): _(Benjamín Garrido)_
+  - Auditor de IA (sin teclado, lidera la fase C): _(Emilio Santibañez)_
+  - Relator (sin teclado, expone los 90 s): _(Abdiel Ortiz)_
 
 ## Diagrama
-- Foto del dibujo de la fase A, sin datos reales: _(subir como `docs/dibujo-fase-a.jpg`)_
+- Foto del dibujo de la fase A, sin datos reales: _(`docs/dibujo-fase-a.jpg`)_
 - Versión digital del mismo dibujo y amenazas por flecha (STRIDE): [`docs/modelo-amenazas.md`](docs/modelo-amenazas.md)
 - Resumen: Operador (HMI) → Lector de cloro en la pasarela OT → PLC-01 → bomba dosificadora → agua. Además: Asistente de IA → PLC, y Repositorio/pipeline → pasarela.
 
