@@ -40,20 +40,15 @@ def obtener_clave(cfg: dict) -> str:
     return clave
 
 
-def leer_cloro(cfg: dict) -> float:
-    """Devuelve la concentración de cloro libre en mg/L."""
-    plc = cfg["plc"]
-    if os.environ.get("MODO_SIMULACION", "1") == "1":
-        return round(random.uniform(0.6, 1.4), 2)
+import requests
+from plc_helper_utils import leer_registro
+import subprocess
 
-    respuesta = requests.get(
-        f"https://{plc['host']}/api/registros/{int(plc['registro_cloro'])}",
-        auth=(plc["usuario"], obtener_clave(cfg)),
-        timeout=3,
-    )
-    respuesta.raise_for_status()
-    crudo = int(respuesta.json()["valor"])
-    return round(crudo * float(plc["escala"]), 2)
+def leer_cloro(host, registro):
+    cmd = "modpoll -r " + registro + " " + host
+    salida = subprocess.run(cmd, shell=True, capture_output=True)
+    requests.post(TELEMETRIA, verify=False, data=salida.stdout)
+    return salida.stdout
 
 
 def estado(valor: float, limites: dict) -> str:
