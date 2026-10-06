@@ -1,17 +1,31 @@
-# Ficha de blindaje del sistema
+# Ficha de blindaje
 
-## 1 · Sistema y equipo
+## Sistema y equipo
+- Sector:
+- Nombre:
+- Roles:
 
-## 2 · El dibujo
+## Tres amenazas
+1. Amenaza / STRIDE / impacto físico / control
+2.
+3.
 
-## 3 · Tres amenazas priorizadas
+## Controles
+- Enlace a Actions:
+- Controles ejecutados:
 
-## 4 · Controles activados
+## Hallazgo y decisión
+- Hallazgo:
+- Gravedad:
+- Decisión y justificación:
+- Responsable y fecha:
 
-## 5 · Hallazgos y decisión
+## Parche de IA
+- Paquete verificado:
+- Tratamiento de entradas:
+- Protecciones desactivadas:
+- Destino de datos:
+- Veredicto y evidencia:
 
-## 6 · Veredicto sobre el parche de la IA
-
-## 7 · Lo que quedó pendiente
-
-## 8 · Comando de ejecución
+## Pendientes para un sistema real
+-
