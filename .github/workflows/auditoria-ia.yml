@@ -1,0 +1,41 @@
+name: auditoria-parche-ia
+# Fase C · evidencia verificable para la pregunta 1: «¿existe ese paquete?»
+# No bloquea el pipeline principal: deja el resultado en el resumen de la ejecución.
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    paths:
+      - "propuestas/**"
+      - ".github/workflows/auditoria-ia.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verificar-paquetes-propuestos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: ¿Existen en PyPI los paquetes que importa la propuesta #7?
+        run: |
+          {
+            echo "## Propuesta #7 · verificación de paquetes"
+            echo ""
+            echo "| Paquete importado | Nombre en PyPI | ¿Existe? | Respuesta de pypi.org |"
+            echo "|---|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for par in "plc_helper_utils:plc-helper-utils" "requests:requests"; do
+            mod="${par%%:*}"; pkg="${par##*:}"
+            codigo=$(curl -s -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/${pkg}/json")
+            if [ "$codigo" = "200" ]; then existe="sí"; else existe="**NO**"; fi
+            echo "| \`${mod}\` | \`${pkg}\` | ${existe} | HTTP ${codigo} |" >> "$GITHUB_STEP_SUMMARY"
+            echo "${mod} -> ${pkg}: HTTP ${codigo}"
+          done
+          {
+            echo ""
+            echo "Si un paquete no existe, el parche no puede funcionar tal como está, y cualquiera podría"
+            echo "registrar ese nombre mañana con código malicioso (*slopsquatting*). Veredicto: ver ENTREGABLE.md §6."
+          } >> "$GITHUB_STEP_SUMMARY"
