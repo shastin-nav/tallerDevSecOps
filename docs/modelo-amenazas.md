@@ -58,6 +58,6 @@ Criterio: **impacto en el proceso físico**, no dificultad técnica.
 
 ## 4 · ¿Lo hicimos bien?
 
-Sí: cada amenaza elegida tiene un control automático que la detecta y que **se probó fallando** (commit `e724648`, pipeline en rojo) antes de pasar a verde con la corrección (commit `58bb982`). Ver `ENTREGABLE.md`, secciones 4 y 5.
+Sí: cada amenaza elegida tiene un control automático que la detecta y que **se probó fallando** (commit `dce0320`, pipeline en rojo) antes de pasar a verde con la corrección (commit `aa5b9d0`). Ver `ENTREGABLE.md`, secciones 4 y 5.
 
 Mapeo opcional a MITRE ATT&CK for ICS: A1 → T0812 *Default Credentials*; A2 → T0859 *Valid Accounts*; A3 → T0855 *Unauthorized Command Message*.

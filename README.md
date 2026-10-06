@@ -15,7 +15,7 @@ Repositorio del **Equipo 1 · Agua potable** para el Taller DevSecOps sobre Infr
 
 - **Ficha de blindaje (entregable):** [`ENTREGABLE.md`](ENTREGABLE.md)
 - Fase A · modelo de amenazas: [`docs/modelo-amenazas.md`](docs/modelo-amenazas.md)
-- Fase C · propuesta de la IA: [`propuestas/propuesta-7.patch`](propuestas/propuesta-7.patch) (rechazada)
+- Fase C · propuesta de la IA: [Pull Request #1](https://github.com/shastin-nav/tallerDevSecOps/pull/1) · copia en [`propuestas/propuesta-7.patch`](propuestas/propuesta-7.patch) (rechazada)
 - Guion de exposición: [`docs/guion-90-segundos.md`](docs/guion-90-segundos.md)
 
 ## Ejecutarlo
