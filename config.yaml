@@ -1,0 +1,13 @@
+planta: Maipo Sur
+
+plc:
+  host: pasarela-ot.maipo-sur.local
+  usuario: turno-noche
+  password: "MpSur_cl0r0_9fK2xQ7vR4tz"
+  registro_cloro: 40001
+  escala: 0.01
+
+# Norma chilena NCh409: cloro libre residual entre 0,2 y 2,0 mg/L
+limites_mg_l:
+  minimo: 0.2
+  maximo: 2.0

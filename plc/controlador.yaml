@@ -1,0 +1,13 @@
+# Configuración del controlador de dosificación de cloro (PLC-01)
+# Se carga en el PLC con la herramienta del fabricante durante la puesta en marcha.
+controlador:
+  modelo: Vision-130 (simulado)
+  direccion_ip: 10.30.0.21
+  puerto_modbus: 502
+  acceso_remoto: habilitado
+  cuenta_mantenimiento:
+    usuario: admin
+    clave: "1111"   # ejemplo
+  dosificacion:
+    setpoint_mg_l: 0.8
+    limite_bomba_porcentaje: 100

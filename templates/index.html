@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="10">
+  <title>Cloro · {{ planta }}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0f1c2e; color: #e8eef6; display: grid; place-items: center; min-height: 100vh; margin: 0; }
+    main { text-align: center; }
+    .valor { font-size: 5rem; font-weight: 700; margin: .2em 0; }
+    .estado { font-size: 1.2rem; padding: .4em 1em; border-radius: 6px; background: #1d3557; }
+  </style>
+</head>
+<body>
+  <main>
+    <p>{{ planta }} · cloro libre</p>
+    <p class="valor">{{ valor }} mg/L</p>
+    <p class="estado">{{ estado }}</p>
+    <p><small>Escenario ficticio · Taller DevSecOps UBO</small></p>
+  </main>
+</body>
+</html>

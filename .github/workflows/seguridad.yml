@@ -1,0 +1,20 @@
+name: seguridad-planta
+on: [push, workflow_dispatch]
+jobs:
+  buscar-secretos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Buscar secretos con Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---------------------------------------------------------------
+  # Ejercicio 2 · Fase B: quitar el comentario de los tres controles
+  # ---------------------------------------------------------------
+  # control-1-codigo-propio:      semgrep + gitleaks
+  # control-2-codigo-prestado:    trivy fs + osv-scanner + SBOM
+  # control-3-configuracion:      trivy config sobre infra/
