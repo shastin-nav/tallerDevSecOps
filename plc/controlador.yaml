@@ -4,10 +4,16 @@ controlador:
   modelo: Vision-130 (simulado)
   direccion_ip: 10.30.0.21
   puerto_modbus: 502
-  acceso_remoto: habilitado
+  # Antes: "habilitado" para cualquier origen. Ahora solo la pasarela OT puede hablarle.
+  acceso_remoto: solo_pasarela_ot
+  origenes_permitidos:
+    - 10.30.0.10   # pasarela OT (infra/plc.tf)
   cuenta_mantenimiento:
-    usuario: admin
-    clave: "1111"   # ejemplo
+    usuario: mant-maipo-sur
+    # Defecto sembrado corregido: la clave de fábrica se cambió en el equipo y la nueva
+    # se guarda en el secreto PLC_MANT_PASSWORD, nunca en este archivo.
+    password_env: PLC_MANT_PASSWORD
   dosificacion:
     setpoint_mg_l: 0.8
-    limite_bomba_porcentaje: 100
+    # Límite físico: aunque llegue una orden alterada, la bomba no puede sobredosificar.
+    limite_bomba_porcentaje: 60

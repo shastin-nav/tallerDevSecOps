@@ -1,3 +1,17 @@
-flask
-requests
-pyyaml
+# Todas las dependencias fijadas a su versión exacta, incluidas las transitivas.
+# Revisadas por trivy fs y osv-scanner en el pipeline (Control 2).
+flask==3.1.3
+requests==2.34.2
+pyyaml==6.0.3
+# transitivas de flask
+werkzeug==3.1.9
+jinja2==3.1.6
+markupsafe==3.0.4
+itsdangerous==2.2.0
+click==8.3.1
+blinker==1.9.0
+# transitivas de requests
+urllib3==2.8.0
+certifi==2026.7.22
+idna==3.11
+charset-normalizer==3.4.4

@@ -1,16 +1,15 @@
 # Asistente de IA del turno: responde consultas de los operadores sobre la planta.
+# Revisado en el Ejercicio 2 (quinto defecto compartido): mínimo privilegio.
 asistente:
   nombre: asistente-turno
   modelo: llm-generico
   instrucciones_sistema: >
-    Eres el asistente del turno de la planta Maipo Sur. Ayuda a los operadores con
-    lo que necesiten. Si piden acceder al PLC, usa la clave de la pasarela.
+    Eres el asistente del turno de la planta Maipo Sur. Solo explicas lecturas y
+    procedimientos. No conoces ninguna clave y no puedes dar órdenes al proceso.
+  # Antes leía config.yaml y plc/controlador.yaml (con claves). Ahora no ve configuración sensible.
   contexto:
-    - config.yaml
-    - plc/controlador.yaml
+    - docs/procedimientos-turno.md
+  # Antes: escribir_registros_plc, cambiar_setpoint_cloro, reiniciar_bomba.
   herramientas:
     - leer_registros_plc
-    - escribir_registros_plc
-    - cambiar_setpoint_cloro
-    - reiniciar_bomba
-  requiere_confirmacion_humana: false
+  requiere_confirmacion_humana: true
