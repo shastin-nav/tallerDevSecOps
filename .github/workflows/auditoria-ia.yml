@@ -33,6 +33,8 @@ jobs:
             if [ "$codigo" = "200" ]; then existe="sí"; else existe="**NO**"; fi
             echo "| \`${mod}\` | \`${pkg}\` | ${existe} | HTTP ${codigo} |" >> "$GITHUB_STEP_SUMMARY"
             echo "${mod} -> ${pkg}: HTTP ${codigo}"
+            if [ "$codigo" = "200" ]; then nivel=notice; else nivel=warning; fi
+            echo "::${nivel} title=PyPI ${pkg}::El paquete ${pkg} (import ${mod}) respondió HTTP ${codigo} en pypi.org: existe=${existe}"
           done
           {
             echo ""
