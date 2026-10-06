@@ -1,16 +1,43 @@
 name: seguridad-planta
 on: [push, workflow_dispatch]
+permissions:
+  contents: read
 jobs:
   buscar-secretos:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Acciones fijadas a su identificador exacto (commit), no a una etiqueta reescribible (caso tj-actions).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Buscar secretos con Gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  servicio-funciona:
+    # El servicio sigue funcionando: ahora lee la clave desde el secreto PLC_CLAVE.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Prueba de humo
+        env:
+          PLC_CLAVE: ${{ secrets.PLC_CLAVE }}
+          MODO_SIMULACION: "1"
+        run: |
+          python - <<'PY'
+          import lector_cloro as l
+          cfg = l.cargar_config()
+          assert l.obtener_clave(cfg), "PLC_CLAVE vacío"
+          cliente = l.app.test_client()
+          r = cliente.get("/api/cloro")
+          assert r.status_code == 200, r.status_code
+          print("OK:", r.get_json())
+          PY
 
   # ---------------------------------------------------------------
   # Ejercicio 2 · Fase B: quitar el comentario de los tres controles

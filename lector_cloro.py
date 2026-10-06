@@ -31,8 +31,13 @@ def cargar_config(ruta: str = RUTA_CONFIG) -> dict:
 
 
 def obtener_clave(cfg: dict) -> str:
-    # Arreglo rápido del turno de emergencia: la clave queda en config.yaml.
-    return cfg["plc"]["password"]
+    """La clave nunca vive en el repositorio: se lee de la variable de entorno indicada
+    en config.yaml, que en GitHub Actions se alimenta desde Settings → Secrets."""
+    variable = cfg["plc"]["variable_clave"]
+    clave = os.environ.get(variable)
+    if not clave:
+        raise RuntimeError(f"Falta la variable de entorno {variable} con la clave del PLC")
+    return clave
 
 
 def leer_cloro(cfg: dict) -> float:

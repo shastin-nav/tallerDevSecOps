@@ -3,7 +3,9 @@ planta: Maipo Sur
 plc:
   host: pasarela-ot.maipo-sur.local
   usuario: turno-noche
-  password: "MpSur_cl0r0_9fK2xQ7vR4tz"
+  # La clave NO va aquí: se lee desde la variable de entorno (secreto del repositorio).
+  # La clave anterior quedó expuesta en el historial y fue rotada en el PLC.
+  variable_clave: PLC_CLAVE
   registro_cloro: 40001
   escala: 0.01
 
